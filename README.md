@@ -14,7 +14,8 @@ translate Anthropic ⇄ OpenAI, and point Claude Code at it via `ANTHROPIC_BASE_
 | [`bin/claude-real`](bin/claude-real) | Stable launcher for the real Claude Code CLI bundled with the VSCode extension (resolves the newest versioned native binary at runtime). |
 | [`bin/claude-gpt5`](bin/claude-gpt5) | Convenience command: ensures `ccr` is running, injects the proxy env vars, then runs the real `claude`. |
 | [`config/config.example.json`](config/config.example.json) | `ccr` config template. **No secrets** — copy to `~/.claude-code-router/config.json` and fill in your key. |
-| [`install.sh`](install.sh) | One-shot installer: checks Node, installs `ccr`, places launchers, scaffolds the config. |
+| [`systemd/ccr.service`](systemd/ccr.service) | systemd unit so `ccr` starts on boot and restarts on failure. |
+| [`install.sh`](install.sh) | One-shot installer: checks Node, installs `ccr`, places launchers, scaffolds the config. Pass `--systemd` to also install + enable the boot service. |
 
 ## Requirements
 
@@ -30,7 +31,7 @@ translate Anthropic ⇄ OpenAI, and point Claude Code at it via `ANTHROPIC_BASE_
 ```bash
 git clone git@github.com:printing-money/claude-gpt.git
 cd claude-gpt
-./install.sh
+./install.sh              # add --systemd to also enable the boot service
 ```
 
 Then edit `~/.claude-code-router/config.json` and set your gateway `api_key` /
@@ -40,6 +41,18 @@ Then edit `~/.claude-code-router/config.json` and set your gateway `api_key` /
 claude-gpt5                 # interactive
 claude-gpt5 -p "hello"      # one-shot print mode
 ```
+
+## Run on boot (systemd)
+
+```bash
+sudo install -m 644 systemd/ccr.service /etc/systemd/system/ccr.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now ccr.service   # start now + on every boot
+systemctl status ccr                      # check it
+```
+
+`ccr start` is a foreground server, so the unit uses `Type=simple` and systemd
+supervises it directly (auto-restart on failure).
 
 ## How it fits together
 

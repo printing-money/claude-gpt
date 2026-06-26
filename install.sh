@@ -42,11 +42,32 @@ else
   warn "Wrote template ${CCR_CONFIG}. EDIT IT: set api_base_url and api_key."
 fi
 
+# 5. Optional: install + enable the systemd service (Linux with systemd, root)
+SYSTEMD_UNIT="/etc/systemd/system/ccr.service"
+if [[ "${1:-}" == "--systemd" ]]; then
+  if ! pidof systemd >/dev/null 2>&1; then
+    warn "systemd not detected — skipping service install."
+  elif [[ "$(id -u)" -ne 0 ]]; then
+    warn "--systemd needs root — skipping service install."
+  else
+    say "Installing systemd service ccr.service"
+    install -m 644 "${REPO_DIR}/systemd/ccr.service" "${SYSTEMD_UNIT}"
+    systemctl daemon-reload
+    systemctl enable --now ccr.service
+    sleep 4
+    systemctl is-active ccr.service && say "ccr.service is active (auto-starts on boot)."
+  fi
+fi
+
 cat <<EOF
 
 $(say "Done.")
 Next:
   1. Edit ${CCR_CONFIG} (set your gateway api_base_url + api_key).
-  2. ccr restart
-  3. claude-gpt5            # or: claude-gpt5 -p "hello"
+  2. Start the router:
+       systemctl restart ccr      # if installed with --systemd (survives reboot)
+       # or, ad-hoc:  ccr restart
+  3. claude-gpt5                   # or: claude-gpt5 -p "hello"
+
+Tip: re-run with './install.sh --systemd' to install the boot-time service.
 EOF

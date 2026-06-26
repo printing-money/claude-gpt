@@ -1,0 +1,20 @@
+[Unit]
+Description=claude-code-router (ccr) - Anthropic<->OpenAI proxy for Claude Code
+Documentation=https://github.com/musistudio/claude-code-router
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Environment=HOME=/root
+# Clean up any stale instance/pidfile left from a manual run before we start.
+ExecStartPre=-/usr/bin/ccr stop
+ExecStart=/usr/bin/ccr start
+Restart=on-failure
+RestartSec=3
+# Give the node server time to bind :3456 before being considered started.
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target
