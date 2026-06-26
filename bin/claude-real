@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Stable launcher for the real Claude Code CLI bundled with the VSCode
+# extension. The extension directory is versioned (anthropic.claude-code-X-linux-x64)
+# and changes on every update, so we resolve the newest native-binary at runtime
+# instead of hardcoding a version. Used as the real-claude target
+# via the ~/.claude/accounts/.claude-bin pointer file.
+set -euo pipefail
+
+ext_root="${HOME}/.vscode-server/extensions"
+
+# Pick the highest-version extension dir that actually has a native-binary/claude.
+real=""
+if [[ -d "$ext_root" ]]; then
+  while IFS= read -r cand; do
+    bin="$cand/resources/native-binary/claude"
+    if [[ -x "$bin" ]]; then
+      real="$bin"
+      break
+    fi
+  done < <(ls -d "$ext_root"/anthropic.claude-code-*-linux-x64 2>/dev/null | sort -V -r)
+fi
+
+if [[ -z "$real" ]]; then
+  echo "claude-real: no Claude Code native binary found under $ext_root" >&2
+  exit 1
+fi
+
+exec "$real" "$@"

@@ -1,0 +1,10 @@
+# Never commit real secrets / live config
+config/config.json
+*.local.json
+.env
+*.key
+
+# Editor / OS noise
+.DS_Store
+*.swp
+node_modules/

@@ -1,0 +1,25 @@
+{
+  "LOG": false,
+  "API_TIMEOUT_MS": 600000,
+  "Providers": [
+    {
+      "name": "gpt5gw",
+      "api_base_url": "https://YOUR-GATEWAY-HOST:PORT/v1/chat/completions",
+      "api_key": "REPLACE_WITH_YOUR_GATEWAY_KEY",
+      "models": [
+        "gpt-5.5",
+        "gpt-5.4",
+        "gpt-5.4-mini",
+        "gpt-5.3-codex"
+      ]
+    }
+  ],
+  "Router": {
+    "default": "gpt5gw,gpt-5.5",
+    "background": "gpt5gw,gpt-5.4-mini",
+    "think": "gpt5gw,gpt-5.5",
+    "longContext": "gpt5gw,gpt-5.5",
+    "longContextThreshold": 60000,
+    "webSearch": "gpt5gw,gpt-5.5"
+  }
+}

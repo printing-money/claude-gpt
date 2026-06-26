@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Run Claude Code routed through claude-code-router (ccr) to the gpt-5.x gateway.
+# ccr listens on 127.0.0.1:3456 and translates Anthropic <-> OpenAI protocol.
+set -euo pipefail
+
+# Make sure the router is up (start if needed).
+if ! ccr status >/dev/null 2>&1; then
+  ccr start >/dev/null 2>&1 || true
+  sleep 2
+fi
+
+export ANTHROPIC_AUTH_TOKEN="test"
+export ANTHROPIC_BASE_URL="http://127.0.0.1:3456"
+export NO_PROXY="127.0.0.1"
+export DISABLE_TELEMETRY="true"
+export DISABLE_COST_WARNINGS="true"
+export API_TIMEOUT_MS="600000"
+unset CLAUDE_CODE_USE_BEDROCK 2>/dev/null || true
+
+# Prefer the repo-local / installed claude-real launcher; fall back to PATH.
+if [[ -x /usr/local/bin/claude-real ]]; then
+  exec /usr/local/bin/claude-real "$@"
+fi
+exec claude-real "$@"
